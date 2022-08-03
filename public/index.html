@@ -258,7 +258,30 @@
         <!-- Card Point -->
         <div class="card-body" v-if="menu == 3">
           <h1 class="card-title">Point</h1>
-          <span class="card-subtitle">Welcome</span>
+          <!-- Table -->
+          <div class="col">
+            <div class="table-responsive">
+              <table class="table table-stipped table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>#</th>
+                    <th>Account ID</th>
+                    <th>Name</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, index) in rows" :key="index">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ row.account_id }}</td>
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.total_point }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- End of Table -->
         </div>
         <!-- End of Card Point -->
 
@@ -288,7 +311,7 @@
         itemsPerPage: 10,
         page: 1,
         pages: 0,
-        menu: 2,
+        menu: 3,
         isEdit: false,
         customer: {
           id: null,
@@ -329,6 +352,9 @@
               break;
             case 2:
               this.fetchTransaction()
+              break;
+            case 3:
+              this.fetchPoint()
               break;
             default:
               return;
@@ -449,6 +475,20 @@
               this.rows = response.data
               this.pages = response.last_page
               this.total = response.total
+            })
+            .catch(err => {
+              console.error(err)
+            })
+        },
+        fetchPoint() {
+          axios.get(this.baseUrl+`/api/customer/get-point?page=${this.page}&itemsPerPage=${this.itemsPerPage}`)
+            .then((resp) => {
+              console.log("point")
+              console.log(resp.data.data)
+              let response = resp.data.data
+              this.rows = response
+              // this.pages = response.last_page
+              // this.total = response.total
             })
             .catch(err => {
               console.error(err)

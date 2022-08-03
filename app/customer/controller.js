@@ -46,12 +46,55 @@ function destroy(req, res) {
 }
 
 function getPoint(req, res) {
-    Customer.getAll(req.query, (err, data) => {
-        if (err) {
-            response.err('Customer not found', res)
+    Customer.getAll(req.query, async (errCus, dataCus) => {
+        if (errCus) {
+            console.error(errCus);
+            response.err(errCus, res)
         } else {
-            Transaction.findByCustomer(req)
+            let final = [];
+            for (const val of dataCus.data) {
+                const getTrans = new Promise((resolve, reject) => {
+                    Transaction.findByCustomer(val.account_id, (err, data) => {
+                        if (err)
+                            reject(err)
+                        else
+                            resolve(data)
+                    })
+    
+                })
+                let transaction = await getTrans;
+                let total = 0;
+                for (const item of transaction) {
+                    if (item.description == "Beli Pulsa") {
+                        if (item.amount > 10000 && item.amount <= 30000) {
+                            let point = 30000 / 1000
+                            total += point
+                        }
+                        if (item.amount > 30000) {
+                            let point = ((item.amount - 30000) / 1000) * 2
+                            total += point
+                        }
+                    }
 
+                    if (item.description == "Bayar Listrik") {
+                        if (item.amount > 50000 && item.amount <= 100000) {
+                            let point = 100000 / 2000
+                            total += point
+                        }
+                        if (item.amount > 100000) {
+                            let point = ((item.amount - 100000) / 2000) * 2
+                            total += point
+                        }
+                    }
+                }
+                final.push({
+                    account_id: val.account_id,
+                    name: val.name,
+                    total_point: total
+                })
+            }
+            console.log(final);
+            response.ok(final, res);
         }
     })
 }
@@ -60,5 +103,6 @@ module.exports = {
     getAll,
     save,
     update,
-    destroy
+    destroy,
+    getPoint,
 }
