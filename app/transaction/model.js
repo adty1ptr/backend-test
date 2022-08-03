@@ -87,4 +87,15 @@ Transaction.findByCustomer = async (id, result) => {
         })
 }
 
+Transaction.find = async (query, result) => {
+    let { id, start, end } = query
+
+    knex(table).where('account_id', id).whereBetween('transaction_date', [start, end])
+        .then((resp) => {
+            result(null, resp)
+        }).catch((err) => {
+            result(err, null)
+        })
+}
+
 module.exports = Transaction;

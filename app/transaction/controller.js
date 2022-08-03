@@ -44,9 +44,19 @@ function destroy(req, res) {
     })
 }
 
+function find(req, res) {
+    Transaction.find(req.query, (err, data) => {
+        if (err)
+            response.err(err.message, res);
+        else
+            response.ok(data, res);
+    })
+}
+
 module.exports = {
     getAll,
     save,
     update,
-    destroy
+    destroy,
+    find,
 }

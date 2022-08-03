@@ -288,7 +288,45 @@
         <!-- Card Report -->
         <div class="card-body" v-if="menu == 4">
           <h1 class="card-title">Report</h1>
-          <span class="card-subtitle">Welcome</span>
+          <!-- Table -->
+          <div class="col">
+            <div class="row my-4">
+              <div class="col-sm-2">
+                <input type="text" class="form-control" v-model="search" placeholder="Account ID">
+              </div>
+              <div class="col-sm-2">
+                <input type="datetime-local" class="form-control" v-model="startDate" placeholder="Start Date">
+              </div>
+              <div class="col-sm-2">
+                <input type="datetime-local" class="form-control" v-model="endDate" placeholder="End Date">
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-stipped table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>#</th>
+                    <th>Transaction Date</th>
+                    <th>Description</th>
+                    <th>Credit</th>
+                    <th>Debit</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, index) in rows" :key="index">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ getHumanDate(row.transaction_date) }}</td>
+                    <td>{{ row.description }}</td>
+                    <td>{{ (row.debit_credit_status == "C") ? row.amount : "-" }}</td>
+                    <td>{{ (row.debit_credit_status == "D") ? row.amount : "-" }}</td>
+                    <td>{{ row.amount }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- End of Table -->
         </div>
         <!-- End of Card Report -->
       </div>
@@ -304,6 +342,9 @@
     var app = new Vue({
       el: '#app',
       data: {
+        startDate: null,
+        endDate: null,
+        search: null,
         baseUrl: 'http://localhost:3000',
         title: 'Backend Test',
         rows: [],
@@ -311,7 +352,7 @@
         itemsPerPage: 10,
         page: 1,
         pages: 0,
-        menu: 3,
+        menu: 0,
         isEdit: false,
         customer: {
           id: null,
@@ -328,6 +369,21 @@
         }
       },
       watch: {
+        search: {
+          handler() {
+            this.fetchReport()
+          }
+        },
+        startDate: {
+          handler() {
+            this.fetchReport()
+          }
+        },
+        endDate: {
+          handler() {
+            this.fetchReport()
+          }
+        },
         menu: {
           handler() {
             this.handleMenu()
@@ -355,6 +411,9 @@
               break;
             case 3:
               this.fetchPoint()
+              break;
+            case 4:
+              this.fetchReport()
               break;
             default:
               return;
@@ -483,7 +542,19 @@
         fetchPoint() {
           axios.get(this.baseUrl+`/api/customer/get-point?page=${this.page}&itemsPerPage=${this.itemsPerPage}`)
             .then((resp) => {
-              console.log("point")
+              console.log(resp.data.data)
+              let response = resp.data.data
+              this.rows = response
+              // this.pages = response.last_page
+              // this.total = response.total
+            })
+            .catch(err => {
+              console.error(err)
+            })
+        },
+        fetchReport() {
+          axios.get(this.baseUrl+`/api/transaction/report?id=${this.search}&start=${this.startDate}&end=${this.endDate}`)
+            .then((resp) => {
               console.log(resp.data.data)
               let response = resp.data.data
               this.rows = response
