@@ -1,0 +1,513 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Backend Test - 79</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+  <script src="/javascripts/vuejs/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+
+      <!-- Navbar -->
+      <nav class="navbar navbar-expand-lg bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand fw-bold" href="#">{{ title }}</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" @click="setMenu(0)" :class="{'active': menu == 0}" href="#">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" @click="setMenu(1)" :class="{'active': menu == 1}" href="#">Customer</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" @click="setMenu(2)" :class="{'active': menu == 2}" href="#">Transaction</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" @click="setMenu(3)" :class="{'active': menu == 3}" href="#">Point</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" @click="setMenu(4)" :class="{'active': menu == 4}" href="#">Report</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <!-- End of Navbar -->
+
+      <!-- Content -->
+      <div class="card">
+        <!-- Card Home -->
+        <div class="card-body" v-if="menu == 0">
+          <h1 class="card-title">Home</h1>
+          <span class="card-subtitle">Welcome to App Backend Test 79</span>
+        </div>
+        <!-- End of Card Home -->
+
+        <!-- Card Customer -->
+        <div class="card-body" v-if="menu == 1">
+          <h1 class="card-title">Customer</h1>
+          <div class="row">
+            <!-- Form -->
+            <div class="card col-4">
+              <div class="card-header">
+                <span>Form</span>
+              </div>
+              <div class="card-body mt-3">
+                <form class="row g-3">
+                  <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">Account ID</label>
+                    <div class="col-sm-8">
+                      <input type="text" v-model="customer.accountId" class="form-control" placeholder="Account ID" required>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">Name</label>
+                    <div class="col-sm-8">
+                      <input type="text" v-model="customer.name" class="form-control" placeholder="Name" required>
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <button class="btn btn-primary" @click.prevent="saveCustomer()">SAVE</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <!-- End of Form -->
+
+            <!-- Table -->
+            <div class="col">
+              <div class="table-responsive">
+                <table class="table table-stipped table-hover">
+                  <thead class="table-dark">
+                    <tr>
+                      <th>#</th>
+                      <th>Account ID</th>
+                      <th>Name</th>
+                      <th>Created At</th>
+                      <th style="width: 37vh">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, index) in rows" :key="index">
+                      <td>{{ index + 1 }}</td>
+                      <td>{{ row.account_id }}</td>
+                      <td>{{ row.name }}</td>
+                      <td>{{ getHumanDate(row.created_at) }}</td>
+                      <td>
+                        <div class="row">
+                          <button class="col-sm-4 mx-2 btn btn-warning" @click="editCustomer(row)">EDIT</button>
+                          <button class="col-sm-4 mx-2 btn btn-danger" @click.prevent="deleteCustomer(row.id)">DELETE</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                {{ rows.last_page }}
+                <div class="d-flex flex-row justify-content-between">
+                  <div class="col-sm-2">
+                    <span class="">Total data : {{ total }}</span>
+                  </div>
+                  <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                      <li class="page-item">
+                        <a class="page-link" @click="prevPage()" href="#" aria-label="Previous">
+                          <span aria-hidden="true">&laquo;</span>
+                        </a>
+                      </li>
+                      <li class="page-item" :class="{'active': index == page}" v-for="index in pages" :key="index">
+                        <a class="page-link" @click="page = index" href="#">{{ index }}</a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" @click="nextPage()" href="#" aria-label="Next">
+                          <span aria-hidden="true">&raquo;</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+            <!-- End of Table -->
+          </div>
+        </div>
+        <!-- End of Card Customer -->
+
+        <!-- Card Transaction -->
+        <div class="card-body" v-if="menu == 2">
+          <h1 class="card-title">Transaction</h1>
+          <div class="row">
+            <!-- Form -->
+            <div class="card col-4">
+              <div class="card-header">
+                <span>Form</span>
+              </div>
+              <div class="card-body mt-3">
+                <form class="row g-3">
+                  <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">Account ID</label>
+                    <div class="col-sm-8">
+                      <input type="text" v-model="transaction.accountId" class="form-control" placeholder="Account ID" required>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">Transaction Date</label>
+                    <div class="col-sm-8">
+                      <input type="datetime-local" v-model="transaction.transactionDate" class="form-control" placeholder="Transaction Date" required>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">Description</label>
+                    <div class="col-sm-8">
+                      <input type="text" v-model="transaction.description" class="form-control" placeholder="Description" required>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">Debit/Credit</label>
+                    <div class="col-sm-8">
+                      <input type="text" v-model="transaction.isDebit" class="form-control" placeholder="Debit(D)/Credit(C)" maxlength="1" style="text-transform: uppercase" required>
+                    </div>
+                  </div>
+                  <div class="row mb-3">
+                    <label class="col-sm-4 col-form-label">Amount</label>
+                    <div class="col-sm-8">
+                      <input type="text" v-model="transaction.amount" class="form-control" placeholder="Amount" required>
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <button class="btn btn-primary" @click.prevent="saveTransaction()">SAVE</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <!-- End of Form -->
+
+            <!-- Table -->
+            <div class="col">
+              <div class="table-responsive">
+                <table class="table table-stipped table-hover">
+                  <thead class="table-dark">
+                    <tr>
+                      <th>#</th>
+                      <th>Account ID</th>
+                      <th>Transaction Date</th>
+                      <th>Description</th>
+                      <th>Debit/Credit</th>
+                      <th>Amount</th>
+                      <th style="width: 37vh">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, index) in rows" :key="index">
+                      <td>{{ index + 1 }}</td>
+                      <td>{{ row.account_id }}</td>
+                      <td>{{ getHumanDate(row.transaction_date) }}</td>
+                      <td>{{ row.description }}</td>
+                      <td>{{ row.debit_credit_status }}</td>
+                      <td>{{ row.amount }}</td>
+                      <td>
+                        <div class="row">
+                          <button class="col-sm-4 mx-2 btn btn-warning" @click="editTransaction(row)">EDIT</button>
+                          <button class="col-sm-4 mx-2 btn btn-danger" @click.prevent="deleteTransaction(row.id)">DELETE</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                {{ rows.last_page }}
+                <div class="d-flex flex-row justify-content-between">
+                  <div class="col-sm-2">
+                    <span class="">Total data : {{ total }}</span>
+                  </div>
+                  <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                      <li class="page-item">
+                        <a class="page-link" @click="prevPage()" href="#" aria-label="Previous">
+                          <span aria-hidden="true">&laquo;</span>
+                        </a>
+                      </li>
+                      <li class="page-item" :class="{'active': index == page}" v-for="index in pages" :key="index">
+                        <a class="page-link" @click="page = index" href="#">{{ index }}</a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" @click="nextPage()" href="#" aria-label="Next">
+                          <span aria-hidden="true">&raquo;</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+            <!-- End of Table -->
+          </div>
+        </div>
+        <!-- End of Card Transaction -->
+
+        <!-- Card Point -->
+        <div class="card-body" v-if="menu == 3">
+          <h1 class="card-title">Point</h1>
+          <span class="card-subtitle">Welcome</span>
+        </div>
+        <!-- End of Card Point -->
+
+        <!-- Card Report -->
+        <div class="card-body" v-if="menu == 4">
+          <h1 class="card-title">Report</h1>
+          <span class="card-subtitle">Welcome</span>
+        </div>
+        <!-- End of Card Report -->
+      </div>
+      <!-- End of Content -->
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous">
+  </script>
+  <script src="/moment/moment.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: {
+        baseUrl: 'http://localhost:3000',
+        title: 'Backend Test',
+        rows: [],
+        total: 0,
+        itemsPerPage: 10,
+        page: 1,
+        pages: 0,
+        menu: 2,
+        isEdit: false,
+        customer: {
+          id: null,
+          accountId: null,
+          name: null,
+        },
+        transaction: {
+          id: null,
+          accountId: null,
+          transactionDate: null,
+          description: null,
+          isDebit: null,
+          amount: null
+        }
+      },
+      watch: {
+        menu: {
+          handler() {
+            this.handleMenu()
+          },
+        },
+        page: {
+          handler() {
+            this.handleMenu()
+          },
+        },
+        itemsPerPage: {
+          handler() {
+            this.handleMenu()
+          }
+        }
+      },
+      methods: {
+        handleMenu() {
+          switch(this.menu) {
+            case 1:
+              this.fetchCustomer()
+              break;
+            case 2:
+              this.fetchTransaction()
+              break;
+            default:
+              return;
+
+          }
+        },
+        deleteCustomer(id) {
+          Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              axios.delete(this.baseUrl+"/api/customer/"+id).then(resp => {
+                Swal.fire(
+                  'Deleted!',
+                  'Your file has been deleted.',
+                  'success'
+                )
+                this.fetchCustomer()
+              })
+            }
+          })
+        },
+        deleteTransaction(id) {
+          Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              axios.delete(this.baseUrl+"/api/transaction/"+id).then(resp => {
+                Swal.fire(
+                  'Deleted!',
+                  'Your file has been deleted.',
+                  'success'
+                )
+                this.fetchTransaction()
+              })
+            }
+          })
+        },
+        editCustomer(val) {
+          this.isEdit = true
+          this.customer = {
+            id: val.id,
+            accountId: val.account_id,
+            name: val.name,
+          }
+        },
+        editTransaction(val) {
+          this.isEdit = true
+          this.transaction = {
+            id: val.id,
+            accountId: val.account_id,
+            transactionDate: moment(val.transaction_date).format("YYYY-MM-DD HH:mm"),
+            description: val.description,
+            isDebit: val.debit_credit_status,
+            amount: val.amount
+          }
+        },
+        nextPage(){
+          if (this.page >= this.pages) return;
+          this.page = this.page + 1
+        },
+        prevPage(){
+          if (this.page <= 1) return;
+          this.page =  this.page - 1
+        },
+        getHumanDate(val) {
+          return moment(val).format("DD MMM YYYY HH:mm")
+        },
+        setMenu(val) {
+          this.menu = val
+        },
+        resetForm(){
+          this.isEdit = false
+          this.customer = {
+            id: null,
+            accountId: null,
+            name: null,
+          };
+          this.transaction = {
+            id: null,
+            accountId: null,
+            transactionDate: null,
+            description: null,
+            isDebit: true,
+            amount: null
+          }
+        },
+        fetchCustomer() {
+          axios.get(this.baseUrl+`/api/customer?page=${this.page}&itemsPerPage=${this.itemsPerPage}`)
+            .then((resp) => {
+              console.log(resp.data.data)
+              let response = resp.data.data
+              this.rows = response.data
+              this.pages = response.last_page
+              this.total = response.total
+            })
+            .catch(err => {
+              console.error(err)
+            })
+        },
+        fetchTransaction() {
+          axios.get(this.baseUrl+`/api/transaction?page=${this.page}&itemsPerPage=${this.itemsPerPage}`)
+            .then((resp) => {
+              console.log(resp.data.data)
+              let response = resp.data.data
+              this.rows = response.data
+              this.pages = response.last_page
+              this.total = response.total
+            })
+            .catch(err => {
+              console.error(err)
+            })
+        },
+        saveCustomer() {
+          console.log("save clicked")
+          let data = {
+            account_id: this.customer.accountId,
+            name: this.customer.name
+          }
+
+          if (!this.isEdit) {
+            console.log("here")
+            axios.post(this.baseUrl+"/api/customer", data).then(resp => {
+              console.log(resp)
+              this.resetForm()
+              this.fetchCustomer()
+            }).catch(err => console.error(err))
+            return
+          }
+          console.log("there")
+
+          axios.patch(this.baseUrl+"/api/customer/"+this.customer.id, data).then(resp => {
+            this.resetForm()
+            this.fetchCustomer()
+          }).catch(err => console.error(err))
+
+        },
+        saveTransaction() {
+          let data = {
+            account_id: this.transaction.accountId,
+            transaction_date: this.transaction.transactionDate,
+            description: this.transaction.description,
+            debit_credit_status: this.transaction.isDebit,
+            amount: this.transaction.amount
+          }
+
+          if (!this.isEdit) {
+            axios.post(this.baseUrl+"/api/transaction", data).then(resp => {
+              console.log(resp)
+              this.resetForm()
+              this.fetchTransaction()
+            }).catch(err => console.error(err))
+            return
+          }
+
+          axios.patch(this.baseUrl+"/api/transaction/"+this.transaction.id, data).then(resp => {
+            this.resetForm()
+            this.fetchTransaction()
+          }).catch(err => console.error(err))
+
+        }
+      },
+      mounted() {
+        this.handleMenu()
+      }
+    })
+  </script>
+</body>
+
+</html>
