@@ -1,0 +1,9 @@
+SERVICE_NAME=BACKEND_TEST
+PORT=3000
+
+# Database Connection
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASS=
+DB_NAME=backend_test
